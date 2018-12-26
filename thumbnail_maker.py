@@ -5,17 +5,24 @@ import logging
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
-
+import threading
 import PIL
 from PIL import Image
 
-logging.basicConfig(filename='logfile.log', level=logging.DEBUG)
+FORMAT = "[%(threadName)s, %(asctime)s, %(levelname)s] %(message)s"
+logging.basicConfig(filename='logfile.log', level=logging.DEBUG, format=FORMAT)
 
 class ThumbnailMakerService(object):
     def __init__(self, home_dir='.'):
         self.home_dir = home_dir
         self.input_dir = self.home_dir + os.path.sep + 'incoming'
         self.output_dir = self.home_dir + os.path.sep + 'outgoing'
+
+    def download_image(self, url):
+        logging.info("downloading image at URL " + url)
+        img_filename = urlparse(url).path.split('/')[-1]
+        urlretrieve(url, self.input_dir + os.path.sep + img_filename)
+        logging.info("image saved to  " + self.input_dir + os.path.sep + img_filename)
 
     def download_images(self, img_url_list):
         # validate inputs
@@ -24,15 +31,17 @@ class ThumbnailMakerService(object):
         os.makedirs(self.input_dir, exist_ok=True)
         
         logging.info("beginning image downloads")
-
+        thread_pool = []
         start = time.perf_counter()
         for url in img_url_list:
             # download each image and save to the input dir 
-            img_filename = urlparse(url).path.split('/')[-1]
-            try:
-                urlretrieve(url, self.input_dir + os.path.sep + img_filename)
-            except HTTPError:
-                print(url)
+            t = threading.Thread(target=self.download_image, args=(url, ))
+            t.start()
+            thread_pool.append(t)
+        for t in thread_pool:
+            t.join()
+
+
         end = time.perf_counter()
 
         logging.info("downloaded {} images in {} seconds".format(len(img_url_list), end - start))
@@ -73,7 +82,7 @@ class ThumbnailMakerService(object):
         start = time.perf_counter()
 
         self.download_images(img_url_list)
-        self.perform_resizing()
+        #self.perform_resizing()
 
         end = time.perf_counter()
         logging.info("END make_thumbnails in {} seconds".format(end - start))
