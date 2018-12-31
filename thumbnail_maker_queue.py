@@ -3,7 +3,7 @@ import time
 import os
 import logging
 from urllib.parse import urlparse
-from urllib.error import HTTPError
+# from urllib.error import HTTPError
 from urllib.request import urlretrieve
 import threading
 import PIL
@@ -20,34 +20,38 @@ class ThumbnailMakerService(object):
         self.input_dir = self.home_dir + os.path.sep + 'incoming'
         self.output_dir = self.home_dir + os.path.sep + 'outgoing'
         self.dl_lock = threading.Lock()
-        self.download_bytes = 0;
+        self.download_bytes = 0
         self.max_concurrent_dl = 4
         self.dl_sem = threading.Semaphore(self.max_concurrent_dl)
         self.images_queue = Queue()
+        self.dl_queue = Queue()
 
-    def download_image(self, url):
-        self.dl_sem.acquire()
-        # or use the with statement 
-        # with self.dl_sem:
-        try:
-            img_filename = urlparse(url).path.split('/')[-1]
-            dest_path = self.input_dir + os.path.sep + img_filename
-            if not os.path.exists(dest_path):
-                urlretrieve(url, dest_path)
-                image_size = os.path.getsize(dest_path)
-                logging.info("downloading image at URL " + url)
-                logging.info(f"image [{image_size}] saved to  {dest_path}" )
-            else:
-                image_size = os.path.getsize(dest_path)
-                logging.info(f"image [{dest_path}] exists" )
+    def download_image(self):
+        while not self.dl_queue.empty():
+            url = self.dl_queue.get(block=False)
+            # or use the with statement
+            # with self.dl_sem:
+            try:
+                img_filename = urlparse(url).path.split('/')[-1]
+                dest_path = self.input_dir + os.path.sep + img_filename
+                if not os.path.exists(dest_path):
+                    urlretrieve(url, dest_path)
+                    image_size = os.path.getsize(dest_path)
+                    logging.info("downloading image at URL " + url)
+                    logging.info(f"image [{image_size}] saved to  {dest_path}")
+                else:
+                    image_size = os.path.getsize(dest_path)
+                    logging.info(f"image [{dest_path}] exists")
 
-            self.images_queue.put(dest_path)
-            with self.dl_lock:
-                self.download_bytes += image_size
+                self.dl_queue.task_done()
+                self.images_queue.put(dest_path)
+                with self.dl_lock:
+                    self.download_bytes += image_size
 
-            # logging.info(f"image [{image_size}] saved to  {dest_path}" )
-        finally:
-            self.dl_sem.release()
+                # logging.info(f"image [{image_size}] saved to  {dest_path}" )
+            except Queue.Empty:
+                logging.infon("Queue empty")
+
 
     def download_images(self, img_url_list):
         # validate inputs
@@ -70,6 +74,7 @@ class ThumbnailMakerService(object):
         for t in thread_pool:
             t.join()
         
+        # selfimages_queue.put(None)
         self.images_queue.put('poison')
 
 
@@ -80,8 +85,6 @@ class ThumbnailMakerService(object):
 
     def perform_resizing(self):
         # validate inputs
-        if not os.listdir(self.input_dir):
-            return
         os.makedirs(self.output_dir, exist_ok=True)
 
         logging.info("beginning image resizing")
@@ -91,6 +94,8 @@ class ThumbnailMakerService(object):
         start = time.perf_counter()
         while True:
             filename = self.images_queue.get()
+            logging.info(f"resizing image {filename}")
+            #  if filename:
             if not filename == 'poison':
                 orig_img = Image.open(filename)
                 for basewidth in target_sizes:
@@ -112,12 +117,13 @@ class ThumbnailMakerService(object):
                         logging.info(f"thumbnail image {dest_thumbnail_path} exists!")
 
 
+                    logging.info(f"done resizing image {filename}")
                  # os.remove(self.input_dir + os.path.sep + filename)
             else:
                 logging.info("poison!")
+                self.images_queue.task_done()
                 break
 
-        self.images_queue.task_done()
 
 
         end = time.perf_counter()
@@ -128,8 +134,23 @@ class ThumbnailMakerService(object):
         logging.info("START make_thumbnails")
         start = time.perf_counter()
 
-        self.download_images(img_url_list)
-        self.perform_resizing()
+        for image_url in img_url_list:
+            self.dl_queue.put(image_url)
+
+        max_dl_threads = 4
+        for _ in range(max_dl_threads):
+            t = threading.Thread(target=self.download_image)
+            t.start()
+
+
+        t2 = threading.Thread(target=self.perform_resizing)
+
+        t2.start()
+        self.dl_queue.join()
+        self.images_queue.put("poison")
+        t2.join()
+
+
 
         end = time.perf_counter()
         logging.info("END make_thumbnails in {} seconds".format(end - start))
