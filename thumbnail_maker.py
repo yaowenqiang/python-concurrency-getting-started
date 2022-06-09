@@ -18,7 +18,7 @@ class ThumbnailMakerService(object):
         self.input_dir = self.home_dir + os.path.sep + 'incoming'
         self.output_dir = self.home_dir + os.path.sep + 'outgoing'
         self.dl_lock = threading.Lock()
-        self.download_bytes = 0;
+        self.download_bytes = 0
         self.max_concurrent_dl = 4
         self.dl_sem = threading.Semaphore(self.max_concurrent_dl)
 
