@@ -8,7 +8,7 @@ from urllib.request import urlretrieve
 import threading
 import PIL
 from PIL import Image
-from queue import Queue
+from queue_demo import Queue
 
 
 FORMAT = "[%(threadName)s, %(asctime)s, %(levelname)s] %(message)s"
