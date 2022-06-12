@@ -1,5 +1,6 @@
 from threading import Thread
 from queue import Queue
+import  logging
 
 def producer(queue):
     for i in range(10):
@@ -9,13 +10,18 @@ def producer(queue):
     queue.put(0)
 
 def consumer(queue):
-    while True:
-        item = queue.get() # if queue is empty ,the get call will block
-        if item == 0:
-            # poison pill
-            queue.task_done()
-            break
-        item = queue.get(block=False) # with the block=False flag, get call won't be blocked
+    # while True:
+    while not queue.empty():
+        # item = queue.get() # if queue is empty ,the get call will block
+        try:
+            item = queue.get(block=False) # with the block=False flag, get call won't be blocked
+        except Queue.Empty:
+            logging.info('Queue empty!')
+
+        # if item == 0:
+        #     # poison pill
+        #     queue.task_done()
+        #     break
         # do something with the item
         print(item)
         queue.task_done()
