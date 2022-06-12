@@ -64,4 +64,20 @@ map(func, iterable[,chunksize])
 
 + Pipe
 + Queue
-+ 
+
+
+## Multiprocess Queue Methods
+
+| threading.Queue | multiprocessing.Queue | multiprocessing.JoinableQueue | 
+|-----------------|-----------------------|-------------------------------|
+| qsize()         | qsize                 | qsize                         |
+| put()           | put()                 | put()                         |
+| get()           | get()                 | get()                         |
+| empty()         | empty()               | empty()                       |
+| full()          | full()                | full()                        |
+| task_done()     | -- task_done() --     | task_done()                   |
+| join()          | join()                | join()                        |
+
+
+
+

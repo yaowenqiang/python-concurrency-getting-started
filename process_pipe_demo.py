@@ -1,16 +1,15 @@
 import random
-import Pipe
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 def make_tuple(conn):
     num = random.randint(1,9)
-    conn.send(('Hi', num))
-    print(conn.recev())
+    conn.send(('Hi ', num))
+    print(conn.recv())
 
 
 def make_string(conn):
     tup = conn.recv()
     result = ''
-    substr, num = top
+    substr, num = tup
     for _ in range(num):
         result += substr
     conn.send(result)
@@ -22,3 +21,5 @@ if __name__ == '__main__':
 
     p1.start()
     p2.start()
+    p1.join()
+    p2.join()
