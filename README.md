@@ -81,3 +81,49 @@ map(func, iterable[,chunksize])
 
 
 
+## Shared State
+
++ Shared Memory
+  + multiprocessing.Value
++ Manager Process
+  + multiprocessing.Array
+
+'''python
+multiprocessing.Value(typecode_or_type, *args[, lock])
+'''
+
+## ctypes
+
+| ctypes type | Ctype                     | Python type               | Type-code |
+|-------------|---------------------------|---------------------------|-----------|
+| c_bool      | _Bool                     | bool(1)                   |           |
+| c_char      | char                      | 1-character bytes object  | 'c'       |
+| c_wchar     | wchar_t                   | 1-character string object | 'u'       |
+| c_int       | int                       | int                       | 'i'       |
+| c_long      | long                      | int                       | 'l'       |
+| c_float     | float                     | float                     | 'f'       |
+| c_char_p    | char *(NUL terminated     | bytes object or None      |           |
+| c_wchar_p   | wchar_t * (NUL terminated | string object or None     |           |
+| c_void_p    | void *                    | int or None               | -         |
+
+## Manager
+
+| Value      | Array     | 
+|------------|-----------|
+| Dictionary | List      |
+| Lock       | Semaphore |
+
+## Manager Shared Objects
+
+| Data Structures | Synchronization Mechanisms | 
+|-----------------|----------------------------|
+| Value           | Lock                       |
+| Array           | RLock                      |
+| List            | BoundedSemaphore           |
+| Dict            | Event                      |
+| Namespace       | Condition                  |
+| Queue           | Barrier                    |
+
+
+
+
