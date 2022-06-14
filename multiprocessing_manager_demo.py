@@ -9,7 +9,7 @@ if __name__ == '__main__':
     d = mgr.dict()
     jobs = [
         multiprocessing.Process(target=do_work, args=(d,i))
-        for i in range (8)
+        for i in range(8)
     ]
 
     for j in jobs:
