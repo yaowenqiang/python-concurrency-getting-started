@@ -124,6 +124,15 @@ multiprocessing.Value(typecode_or_type, *args[, lock])
 | Namespace       | Condition                  |
 | Queue           | Barrier                    |
 
+## Cooperative Multitasking
 
++ Tasks suspend themselves to allow others run
++ Event loop resumes the task when the IO operation completes
++ Tasks => Coroutines
+
+## Coroutine
+
++ Coroutine Function
++ Coroutine Object
 
 
