@@ -137,3 +137,16 @@ multiprocessing.Value(typecode_or_type, *args[, lock])
 
 
 > pip install aiohttp
+
+
+## asyncio libraries
+
++ aiomysql
++ aiopg
++ aiocouchdb
++ aiocassandra
+
+
+> https://github.com/python/asyncio/wiki/ThirdParty
+
+
