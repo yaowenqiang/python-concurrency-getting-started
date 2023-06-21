@@ -1,7 +1,9 @@
 import threading
+
+
 class FibonacciThread(threading.Thread):
-    def __int__(self, num):
-        Thread.__init__(self)
+    def __init__(self, num=None):
+        threading.Thread.__init__(self)
         self.num = num
 
     def run(self):
@@ -9,15 +11,15 @@ class FibonacciThread(threading.Thread):
         fib[0] = 0
         fib[1] = 1
         for i in range(2, self.num + 1):
-            fib[i] = fib[i-1] + fib[i-2]
-            print(fib[self.num])
+            fib[i] = fib[i - 1] + fib[i - 2]
+
+        print(fib[self.num])
 
 
-myFibTask1 = FibonacciThread(9)
-myFibTask2 = FibonacciThread(12)
-myFibTask1.start()
-myFibTask2.start()
-myFibTask1.join()
-myFibTask2.join()
-
-
+if __name__ == '__main__':
+    myFibTask1 = FibonacciThread(num=10)
+    myFibTask2 = FibonacciThread(num=50)
+    myFibTask1.start()
+    myFibTask2.start()
+    myFibTask1.join()
+    myFibTask2.join()
