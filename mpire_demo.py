@@ -2,6 +2,10 @@ import time
 from multiprocessing import Pool
 from mpire import WorkerPool
 
+from mpire.dashboard import start_dashboard
+dashboard_details = start_dashboard()
+print(dashboard_details)
+
 def time_consuming_function(x):
     time.sleep(1)
     return 
@@ -10,4 +14,5 @@ with Pool(processes=5) as pool:
     results = pool.map(time_consuming_function, range(10))
 
 with WorkerPool(n_jobs=5) as pool:
-    results = pool.map(time_consuming_function, range(10), progress_bar=True)
+    results = pool.map(time_consuming_function, range(10000), progress_bar=True)
+
